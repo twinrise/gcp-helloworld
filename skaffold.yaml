@@ -1,0 +1,16 @@
+apiVersion: skaffold/v4beta7
+kind: Config
+metadata:
+  name: gcp-helloworld
+build:
+  artifacts:
+  - image: localhost:5000/gcp-helloworld
+    jib:
+      project: com.example:gcp-helloworld
+deploy:
+  helm:
+    releases:
+    - name: gcp-helloworld
+      chartPath: helm/gcp-helloworld
+      valuesFiles:
+      - helm/gcp-helloworld/values.yaml

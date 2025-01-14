@@ -1,0 +1,6 @@
+apiVersion: v2
+name: gcp-helloworld
+description: A Helm chart for Spring Cloud Hello World application
+type: application
+version: 0.1.0
+appVersion: "0.0.1"
