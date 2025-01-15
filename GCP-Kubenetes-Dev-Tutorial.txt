@@ -1,0 +1,165 @@
+go install sigs.k8s.io/kind@v0.26.0
+
+gcloud components install skaffold
+
+提示词:
+我需要用一个hello word的demosprig微服务， 帮帮我构建， 要求如下：
+1.使用spring cloud
+2.使用Skaffold来自动化构建，推送和部署应用程序；
+3.使用jib构建镜像
+4.使用helm部署到kubernetes集群
+5.使用kind帮我创建3个几点的集群，我本地需要kubernetes集群用来开发测试
+6.我本地安装了docker ，kind或许可以用得上他来构建本地kubernetes集群
+7.请在我的d:\workspace_spring_cloud目录下开始创建工程，工程名为gcp-helloworld
+
+
+项目结构已经创建完成，这是一个完整的 Spring Cloud Hello World 微服务，具有以下特点：
+1. 使用 Spring Cloud 框架
+2. 配置了 Jib 用于构建 Docker 镜像
+3. 配置了 Skaffold 用于自动化构建和部署
+4. 创建了 Helm chart 用于 Kubernetes 部署
+5. 准备了 kind 配置文件用于创建本地 Kubernetes 集群
+
+接下来的步骤是：
+1. 安装 kind（按照上述说明）
+2. 创建本地 Kubernetes 集群
+3. 使用 Skaffold 进行开发和部署
+
+skaffold dev -v debug
+
+我已经启动了 Skaffold 的开发模式。这个命令会：
+1. 使用 Jib 构建 Spring Boot 应用的 Docker 镜像
+2. 将镜像推送到本地 registry
+3. 使用 Helm 部署应用到 Kind 集群
+4. 监视代码变化，当发生变化时自动重新构建和部署
+
+请注意以下几点：
+1. 第一次构建可能需要一些时间，因为需要下载 Maven 依赖和基础 Docker 镜像
+2. Skaffold 会持续运行并监视文件变化
+3. 如果遇到任何错误，我们可以一起排查
+
+您可以查看命令的输出来了解构建和部署的进度。如果遇到任何问题，请告诉我，我会帮您解决。
+
+要验证应用是否成功部署，我们可以等待 Skaffold 完成初始部署后运行：
+kubectl get pods
+
+运行 Skaffold：
+skaffold dev --default-repo=localhost:5000
+
+用 Skaffold 来构建和部署应用：
+skaffold run --default-repo=localhost:5000
+
+
+检查一下 Docker 服务状态：
+docker ps
+
+构建
+mvn compile jib:build -Djib.allowInsecureRegistries=true
+
+验证这个镜像是否可用：
+docker pull mcr.microsoft.com/openjdk/jdk:17-ubuntu
+
+用 Jib 来构建我们的应用：
+mvn compile jib:build
+
+1. 删除现有的集群：
+kind delete cluster --name gcp-helloworld-cluster
+
+2.创建一个 Docker 网络用于本地 registry：
+docker network create kind
+
+3.运行本地 registry 容器：
+docker run -d --restart=always -p 5000:5000 --name registry --network kind registry:2
+
+4.创建新的 Kind 集群：
+kind create cluster --name gcp-helloworld-cluster --config kind-config.yaml
+✓ Ensuring node image (kindest/node:v1.32.0) 🖼
+ • Preparing nodes 📦 📦 📦   ...
+ ✓ Preparing nodes 📦 📦 📦 
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+ • Joining worker nodes 🚜  ...
+ ✓ Joining worker nodes 🚜
+Set kubectl context to "kind-gcp-helloworld-cluster"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-gcp-helloworld-cluster
+
+Have a nice day! 👋
+
+5.连接本地 registry 到 Kind 网络：
+docker network connect kind registry
+
+6.部署应用：
+skaffold run
+
+7.检查一下 pod 的状态：
+kubectl get pods
+
+8.检查一下服务的状态：
+kubectl get svc
+
+由于我们的服务类型是 ClusterIP，我们可以通过以下几种方式访问应用：
+
+9.使用端口转发：
+kubectl port-forward svc/gcp-helloworld 8080:8080
+
+10.现在你可以通过以下方式访问应用：
+
+在浏览器中访问：http://localhost:8080
+或者使用 curl：
+curl http://localhost:8080
+
+下次运行
+
+1.Kind 集群是否正在运行：
+kind get clusters
+
+2确认本地 registry 是否运行：
+docker ps
+
+3.使用 Skaffold 部署并运行应用：
+skaffold run
+
+删除现有集群：
+kind delete cluster --name gcp-helloworld-cluster
+
+删除并重新创建本地 registry：
+docker rm -f registry
+
+docker run -d --restart=always -p 5000:5000 --name registry --network kind registry:2
+
+重新创建集群：
+kind create cluster --name gcp-helloworld-cluster --config kind-config.yaml
+
+连接 registry 到 kind 网络：
+docker network connect kind registry
+
+现在重新部署应用：
+skaffold run
+
+现在应用已经部署成功，让我们设置端口转发以访问应用：
+kubectl port-forward svc/gcp-helloworld 8080:8080
+
+现在你可以通过以下方式访问应用：
+
+在浏览器中访问：http://localhost:8080
+或者使用 curl：
+curl http://localhost:8080
+
+应用已经成功运行！你可以：
+1. 通过浏览器访问 http://localhost:8080 查看应用
+2. 使用 kubectl logs 查看应用日志
+3. 使用 kubectl get pods 查看 pod 状态
+
+如果你想停止应用，可以：
+1. 按 Ctrl+C 停止端口转发
+2. 运行 skaffold delete 删除部署
+
+需要我帮你执行其他操作吗？
